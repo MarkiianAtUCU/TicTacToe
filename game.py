@@ -19,10 +19,51 @@ class AlreadyOccupiedError(Exception):
     pass
 
 
+class BoardTree():
+    def __init__(self, cmp_turn, usr_turn, free_cells, cmp_list, usr_list):
+        self.free_cells = free_cells[:]
+        self.free_cells.remove(usr_turn if usr_turn else cmp_turn)
+        self.childs = []
+
+        self.cmp_turn = cmp_turn
+        self.usr_turn = usr_turn
+
+        self.cmp_list = cmp_list[:]
+        self.cmp_list.append(cmp_turn)
+
+        self.usr_list = usr_list[:]
+        self.usr_list.append(usr_turn)
+
+        self.all_weights = 0
+        self.my_weight = self.self_evaluate()
+
+    def add_turn(self, pos, t_type):
+        added = BoardTree(pos if t_type == "cmp" else None,
+                          pos if t_type == "usr" else None, self.free_cells,
+                          self.cmp_list, self.usr_list)
+        self.childs.append(added)
+        return added
+
+
+    def self_evaluate(self):
+        cmb = [(1, 2, 3), (4, 5, 6), (7, 8, 9), (1, 4, 7),
+               (2, 5, 8), (3, 6, 9), (1, 5, 9), (7, 5, 3)]
+        for i in cmb:
+            if i[0] in self.usr_list and i[1] in self.usr_list and i[2] in self.usr_list:
+                return -1
+            elif i[0] in self.cmp_list and i[1] in self.cmp_list and i[2] in self.cmp_list:
+                return 1
+        return 0
+
+    def __repr__(self):
+        return f"CT-{self.cmp_turn}, UT-{self.usr_turn}, Free-{self.free_cells}"
+
+
 class Board():
     def __init__(self):
         self.board = [["   " for i in range(3)] for i in range(3)]
         self.previous_turn = None
+        self.board_tree = None
 
     def __str__(self):
         return board.format(*[item for sub in self.board for item in sub])
@@ -67,10 +108,77 @@ class Board():
         else:
             raise OutOfFieldError
 
+    def init_tree(self, pos):
+        self.tree = BoardTree(None, pos, [1, 2, 3, 4, 5, 6, 7, 8, 9], [], [])
+        state = 0
+
+        def recursive(tree, state):
+            state += 1
+            if tree.free_cells != []:
+                for i in tree.free_cells:
+                    if state % 2 == 1:
+                        res = tree.add_turn(i, "cmp")
+                    else:
+                        res = tree.add_turn(i, "usr")
+                    if res.my_weight==0:
+                        recursive(res, state)
+                    else:
+                        res.all_weights=res.my_weight
+            else:
+                return 0
+
+        def recursive_weight(tree):
+            if tree.childs!=[]:
+                tree.all_weights=sum([recursive_weight(i) for i in tree.childs])
+                return sum([recursive_weight(i) for i in tree.childs])
+            else:
+                return tree.all_weights
+
+        recursive(self.tree, state)
+        recursive_weight(self.tree)
+
+    def get_the_best(self):
+            best= sorted(list(map(lambda z: z.all_weights, self.tree.childs)))
+            for i in self.tree.childs:
+                if i.all_weights==best[0]:
+                    return i
+
+    def get_on_usr_input(self, pos):
+        for i in self.tree.childs:
+            if i.usr_turn == pos:
+                return i
+
+    def turn(self, num):
+        if num==0:
+            turn = int(input(">> "))
+            x.set(turn, " X ")
+            x.init_tree(turn)
+            return 0
+
+        if num%2==1:
+            self.tree=self.get_the_best()
+            self.set(self.tree.cmp_turn, " O ")
+        else:
+            turn = int(input(">> "))
+            self.tree=self.get_on_usr_input(turn)
+            self.set(turn, " X ")
 
 x = Board()
 
-while True:
-    print(x.check())
+
+for i in range(9):
+    x.check()
     print(x)
-    x.set(int(input(">> ")), " O ")
+    x.turn(i)
+
+    # print(list(map(lambda z: z.all_weights, x.tree.childs)))
+    # print(x.tree.childs[0].all_weights)
+    # print(x.tree.childs[0].childs[0].all_weights)
+    # print(x.tree.childs[0].childs[0].childs[0])
+    # print(x.tree.childs[0].childs[0].childs[0].childs[0])
+    # print(x.tree.childs[0].childs[0].childs[0].childs[0].childs[0])
+    # print(x.tree.childs[0].childs[0].childs[0].childs[0].childs[0].childs[0])
+    # print(x.tree.childs[0].childs[0].childs[0].childs[0].childs[0].childs[0].childs[0])
+    # print(x.tree.childs[0].childs[0].childs[0].childs[0].childs[0].childs[0].childs[0].childs[0].usr_list)
+    # print(x.tree.childs[0].childs[0].childs[0].childs[0].childs[0].childs[0].childs[0].childs[0].cmp_list)
+    # print(x.tree.childs[0].childs[0].childs[0].childs[0].childs[0].childs[0].childs[0].childs[0])
