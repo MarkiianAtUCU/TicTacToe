@@ -138,10 +138,13 @@ class Board():
         recursive_weight(self.tree)
 
     def get_the_best(self):
+            res=[]
             best= sorted(list(map(lambda z: z.all_weights, self.tree.childs)))
+            print (best)
             for i in self.tree.childs:
                 if i.all_weights==best[0]:
                     return i
+
 
     def get_on_usr_input(self, pos):
         for i in self.tree.childs:
@@ -161,6 +164,7 @@ class Board():
         else:
             turn = int(input(">> "))
             self.tree=self.get_on_usr_input(turn)
+            print (self.tree.childs)
             self.set(turn, " X ")
 
 x = Board()
