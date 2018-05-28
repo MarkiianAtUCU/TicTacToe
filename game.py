@@ -130,7 +130,7 @@ class Board():
         def recursive_weight(tree):
             if tree.childs!=[]:
                 tree.all_weights=sum([recursive_weight(i) for i in tree.childs])
-                return sum([recursive_weight(i) for i in tree.childs])
+                return tree.all_weights
             else:
                 return tree.all_weights
 
