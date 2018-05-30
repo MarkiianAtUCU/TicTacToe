@@ -44,7 +44,6 @@ class BoardTree():
         self.childs.append(added)
         return added
 
-
     def self_evaluate(self):
         cmb = [(1, 2, 3), (4, 5, 6), (7, 8, 9), (1, 4, 7),
                (2, 5, 8), (3, 6, 9), (1, 5, 9), (7, 5, 3)]
@@ -120,16 +119,17 @@ class Board():
                         res = tree.add_turn(i, "cmp")
                     else:
                         res = tree.add_turn(i, "usr")
-                    if res.my_weight==0:
+                    if res.my_weight == 0:
                         recursive(res, state)
                     else:
-                        res.all_weights=res.my_weight
+                        res.all_weights = res.my_weight
             else:
                 return 0
 
         def recursive_weight(tree):
-            if tree.childs!=[]:
-                tree.all_weights=sum([recursive_weight(i) for i in tree.childs])
+            if tree.childs != []:
+                tree.all_weights = sum([recursive_weight(i)
+                                        for i in tree.childs])
                 return tree.all_weights
             else:
                 return tree.all_weights
@@ -138,13 +138,12 @@ class Board():
         recursive_weight(self.tree)
 
     def get_the_best(self):
-            res=[]
-            best= sorted(list(map(lambda z: z.all_weights, self.tree.childs)))
-            print (best)
-            for i in self.tree.childs:
-                if i.all_weights==best[0]:
-                    return i
-
+        res = []
+        best = sorted(list(map(lambda z: z.all_weights, self.tree.childs)))
+        print(best)
+        for i in self.tree.childs:
+            if i.all_weights == best[0]:
+                return i
 
     def get_on_usr_input(self, pos):
         for i in self.tree.childs:
@@ -152,20 +151,30 @@ class Board():
                 return i
 
     def turn(self, num):
-        if num==0:
-            turn = int(input(">> "))
-            x.set(turn, " X ")
-            x.init_tree(turn)
-            return 0
+        try:
+            if num == 0:
+                turn = input(">> ")
+                while turn not in ["1", "2", "3", "4", "5", "6", "7", "8", "9"]:
+                    print("Wrong input")
+                    turn = input(">> ")
+                turn = int(turn)
+                x.set(turn, " X ")
+                x.init_tree(turn)
+                return 0
 
-        if num%2==1:
-            self.tree=self.get_the_best()
-            self.set(self.tree.cmp_turn, " O ")
-        else:
-            turn = int(input(">> "))
-            self.tree=self.get_on_usr_input(turn)
-            print (self.tree.childs)
-            self.set(turn, " X ")
+            if num % 2 == 1:
+                self.tree = self.get_the_best()
+                self.set(self.tree.cmp_turn, " O ")
+
+            else:
+                turn = int(input(">> "))
+                self.set(turn, " X ")
+                self.tree = self.get_on_usr_input(turn)
+
+        except AlreadyOccupiedError:
+            print("Cell is already occupied")
+            self.turn(num)
+
 
 x = Board()
 
