@@ -180,7 +180,14 @@ x = Board()
 
 
 for i in range(9):
-    x.check()
+    res=x.check()
+    if res==-1:
+        print("User wins")
+        break
+    elif res==1:
+        print("Computer wins")
+        break
+
     print(x)
     x.turn(i)
 
